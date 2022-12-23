@@ -1,76 +1,26 @@
 package main
 
 import (
-	"bufio"
-	"log"
+	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"regexp"
-	"strings"
+
+	"github.com/shikaan/shmux/pkg/arguments"
+	"github.com/shikaan/shmux/pkg/exceptions"
+	"github.com/shikaan/shmux/pkg/scripts"
 )
 
-const FILE_NAME = "shmux.conf"
-var TEMP = filepath.Join(os.TempDir(), "shmux")
+func main() {
+	shell, config, scriptName, arguments := arguments.Parse()
 
-func readCommand(line string) (bool, string) {
-  r, _ := regexp.Compile("(.+):")
-  match := r.FindStringSubmatch(line)
+	file, err := os.Open(config)
+	exceptions.HandleError(err)
+	defer file.Close()
 
-  if len(match) > 1 {
-    return true, match[1]
-  }
+	script, err := scripts.ReadScript(scriptName, file)
+	exceptions.HandleError(err)
 
-  return false, ""
-}
+	output, err := scripts.RunScript(script, shell, arguments)
+	exceptions.HandleError(err)
 
-func runCommandLines(lines []string) {
-    os.RemoveAll(TEMP)
-    file, _ := os.Create(TEMP)
-    defer file.Close()
-    file.WriteString("#!/bin/sh\n")
-    file.WriteString(strings.Join(lines, "\n"))
-    _ = os.Chdir(TEMP)
-    out, _ := exec.Command("sh", TEMP).Output()
-    println(string(out))
-}
-
-func main() { 
-  file, err := os.Open(FILE_NAME);
-  command := os.Args[1]
-  
-  println("command: ", command)
-
-  if err != nil {
-    log.Fatal(err)
-    os.Exit(1)
-  }
-
-  defer file.Close()
-  
-  lines := []string{}
-  scanner := bufio.NewScanner(file)
-
-  isCollecting := false
-  for scanner.Scan() {
-    line := scanner.Text()
-    isCommand, match := readCommand(line)
-
-    // finds the first occurrence of the command
-    if isCommand && !isCollecting && match == command {
-      isCollecting = true
-      continue
-    }
-
-    // after finding the command stop on the next
-    if isCommand && isCollecting {
-      break
-    }
-
-    if isCollecting {
-      lines = append(lines, line)
-    }
-  }
-
-  runCommandLines(lines)
+	fmt.Print(output)
 }
