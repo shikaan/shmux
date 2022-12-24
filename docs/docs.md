@@ -14,7 +14,7 @@
 The scripts run by `shmux` live in files called _shmuxfiles_. These configuration files follow the following pattern:
 
 * lines starting with a non-white space and ending with a `:` will be interpreted as a _script definition_
-* lines startung with a `\t` are considered _script lines_ 
+* non-empty lines prepended with whitespaces are considered _script lines_ 
 * the other lines are ignored
 
 A script is composed of all the lines in between two script definitions or last script definition and EOF. 

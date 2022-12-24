@@ -3,6 +3,7 @@ package scripts
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,7 +12,6 @@ import (
 )
 
 const TEMP_SCRIPT_FILE = "shmux"
-const SCRIPT_IDENTIFIER_REGEXP = "^(.+):$"
 
 // A script is a slice of lines representing each a LOC
 type Script = []string
@@ -39,11 +39,13 @@ func RunScript(script Script, shell string, arguments []string) (string, error) 
 	return string(out), nil
 }
 
-func ReadScript(scriptName string, file *os.File) (Script, error) {
+func ReadScript(scriptName string, file io.Reader) (Script, error) {
 	lines := []string{}
 	scanner := bufio.NewScanner(file)
 
 	shouldCollect := false
+	firstLine := true
+	tabLength := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		isScriptLine, match := readScript(line)
@@ -65,7 +67,14 @@ func ReadScript(scriptName string, file *os.File) (Script, error) {
 		}
 
 		if shouldCollect {
-			lines = append(lines, line)
+			// Identifies the intendeation for this script by looking
+			// at the whitespace prepending the first line of the script
+			if firstLine {
+				tabLength = len(line) - len(strings.TrimSpace(line))
+				firstLine = false
+			}
+
+			lines = append(lines, line[tabLength:])
 		}
 	}
 
@@ -81,6 +90,8 @@ func ReadScript(scriptName string, file *os.File) (Script, error) {
 func getTempScriptPath() string {
 	return filepath.Join(os.TempDir(), TEMP_SCRIPT_FILE)
 }
+
+const SCRIPT_IDENTIFIER_REGEXP = "^(\\S+):(.*)"
 
 // Tries identifying lines including scripts, returning if it's a match and what that is
 func readScript(line string) (isScriptLine bool, match string) {
