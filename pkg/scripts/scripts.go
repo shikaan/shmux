@@ -11,7 +11,7 @@ import (
 )
 
 const TEMP_SCRIPT_FILE = "shmux"
-const SCRIPT_IDENTIFIER_REGEXP = "(.+):"
+const SCRIPT_IDENTIFIER_REGEXP = "^(.+):$"
 
 // A script is a slice of lines representing each a LOC
 type Script = []string
@@ -32,6 +32,7 @@ func RunScript(script Script, shell string, arguments []string) (string, error) 
 
 	out, err := exec.Command(shell, path).Output()
 	if err != nil {
+		println(shell, path, err.Error())
 		return "", err
 	}
 

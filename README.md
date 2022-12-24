@@ -1,14 +1,13 @@
+<p align="center">
+  <img width="96" height="96" src="./docs/96x96.png" alt="logo">
+</p>
 
-<center>
+<h1 align="center">shmux</h1>
 
-![logo](./docs/96x96.png)
-
-# shmux
-
-Shell script multiplexer. 
-
-**Write** and **run** multiple scripts from the same file. In (almost) any language.
-</center>
+<p align="center">
+Shell script multiplexer.
+<b>Write</b> and <b>run</b> multiple scripts from the same file. In (almost) any language.
+</p>
 
 ## ⚡️ Quick start
 
@@ -26,7 +25,7 @@ _Windows and manual instructions_
 
 Head to the [releases](https://github.com/shikaan/shmux/releases) page and download the executable for your system and architecture.
 
-### Running scripts
+### Usage
 
 A common use case for `shmux` is running simple scripts for your app in a standardised and language agnostic way. These scripts are to be found in the _configuraiton_ file, also known as _shmuxfile_.
 
@@ -51,7 +50,7 @@ $ shmux build -- "linux"
 $ shmux greet -- "darkness" # => Hello Darkness, my old friend
 ```
 
-### Running more scripts
+### More Usage
 
 What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmux.js` which reads something like
 
@@ -78,15 +77,15 @@ export SHMUX_SHELL=$(which node)
 shmux greet -- "Manuel"
 ```
 
-## Documentation
+## 📄 Documentation
 
 More detailed documentation can be found [here](./docs/docs.md).
 
-## FAQs
+## ❓ FAQs
 
 * _Which languages are supported?_
   
-  `shmux` makes no assumptions about the underlying scripting language to utilize, because it always requires you to specify the shell
+  `shmux` makes no assumptions about the underlying scripting language to utilize, because it always requires you to specify the shell. Any language whose syntax is compatible with shmuxfiles' requirements is supported.
 
 * _Does it have editor support?_
 
@@ -96,7 +95,7 @@ More detailed documentation can be found [here](./docs/docs.md).
 
   More sophisticated editor support may be coming soon. If you are interested, feel free to open an issue.
 
-## Contributing
+## 🤓 Contributing
 
 Have a look through existing [Issues](https://github.com/shikaan/shmux/issues) and [Pull Requests](https://github.com/shikaan/shmux/pulls) that you could help with. If you'd like to request a feature or report a bug, please create a [GitHub Issue](https://github.com/shikaan/shmux/issues).
 
