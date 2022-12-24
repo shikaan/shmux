@@ -12,8 +12,10 @@ func HandleException(e error) {
 	}
 }
 
-func HandleError(e error) {
+func HandleScriptError(scriptName string, e error, output string) {
 	if e != nil {
-		log.Fatalf("shmux: %s\n", e.Error())
+		os.Stderr.WriteString(fmt.Sprintf("shmux: script \"%s\" returned non-zero status code.\n", scriptName))
+		os.Stderr.WriteString(fmt.Sprintf("Error: %s\n", e.Error()))
+		os.Exit(1)
 	}
 }

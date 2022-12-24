@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/shikaan/shmux/pkg/exceptions"
 )
 
 const TEMP_SCRIPT_FILE = "shmux"
@@ -18,7 +20,7 @@ type Script = []string
 
 // Executes a script in a given shell
 // Arguments are positional arguments ($1, $2...) which can be used in the script as replacement
-func RunScript(script Script, shell string, arguments []string) (string, error) {
+func RunScript(script Script, scriptName string, shell string, arguments []string) (string, error) {
 	path := getTempScriptPath()
 	os.RemoveAll(path)
 
@@ -32,7 +34,7 @@ func RunScript(script Script, shell string, arguments []string) (string, error) 
 
 	out, err := exec.Command(shell, path).Output()
 	if err != nil {
-		println(shell, path, err.Error())
+		exceptions.HandleScriptError(scriptName, err, string(out))
 		return "", err
 	}
 
@@ -67,6 +69,10 @@ func ReadScript(scriptName string, file io.Reader) (Script, error) {
 		}
 
 		if shouldCollect {
+			// Skip empty lines
+			if line == "" {
+				continue
+			}
 			// Identifies the intendeation for this script by looking
 			// at the whitespace prepending the first line of the script
 			if firstLine {
