@@ -11,7 +11,8 @@ const CONFIGURATION_ENVIRONMENT = "SHMUX_CONFIG"
 const DEFAULT_SHELL = "/bin/sh"
 const SHELL_ENVIRONMENT = "SHMUX_SHELL"
 const ARGUMENT_SEPARATOR = "--"
-const HELP_TEXT = `Usage: shmux [-config <path>] [-shell <path>] <script> -- [arguments ...]
+const HELP_SCRIPT = "$$$$___HELP___$$$$"
+const HELP_TEXT = `usage: shmux [-config <path>] [-shell <path>] <script> -- [arguments ...]
 
 shmux is a utility to run multiple scripts from one file. Scripts can be written in (almost) any language and they don't need to be in the same language.
 
@@ -36,9 +37,9 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 
 	shell = oneOf(*shellFlag, os.Getenv(SHELL_ENVIRONMENT), DEFAULT_SHELL)
 	config = oneOf(*configFlag, os.Getenv(CONFIGURATION_ENVIRONMENT), DEFAULT_CONFIGURATION)
-	scriptName = flag.Arg(0)
+	scriptName = oneOf(flag.Arg(0), HELP_SCRIPT)
 
-	doubleDashIndex := index(flag.Args(), ARGUMENT_SEPARATOR)
+	doubleDashIndex := findIndex(flag.Args(), ARGUMENT_SEPARATOR)
 
 	if doubleDashIndex == -1 {
 		arguments = []string{}
@@ -50,7 +51,7 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 }
 
 // Returns the index of the given element in the slice or -1 if missing
-func index(slice []string, element string) int {
+func findIndex(slice []string, element string) int {
 	for k, v := range slice {
 		if element == v {
 			return k

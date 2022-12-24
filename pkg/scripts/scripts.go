@@ -42,8 +42,10 @@ func RunScript(script Script, scriptName string, shell string, arguments []strin
 	return string(out), nil
 }
 
+// Parses the provided file, retuning the Script whose name is the provided one
 func ReadScript(scriptName string, file io.Reader) (Script, error) {
 	lines := []string{}
+	availableScripts := []string{}
 	scanner := bufio.NewScanner(file)
 
 	shouldCollect := false
@@ -54,6 +56,8 @@ func ReadScript(scriptName string, file io.Reader) (Script, error) {
 		isScriptLine, match := readScript(line)
 
 		if isScriptLine {
+			availableScripts = append(availableScripts, match)
+
 			// Switch on collection, if we match the given script name.
 			// This allows collecting lines from next line on.
 			if !shouldCollect && match == scriptName {
@@ -87,12 +91,34 @@ func ReadScript(scriptName string, file io.Reader) (Script, error) {
 
 	// If shouldCollect was never toggled, the script was not found
 	if !shouldCollect {
-		return nil, fmt.Errorf("could not find script \"%s\"", scriptName)
+		return nil, fmt.Errorf("could not find \"%s\". Available scripts: %s", scriptName, strings.Join(availableScripts, ", "))
 	}
 
 	return lines, nil
 }
 
+func MakeHelp(file io.Reader) string {
+	availableScripts := []string{}
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		isScriptLine, match := readScript(line)
+
+		if isScriptLine {
+			availableScripts = append(availableScripts, match)
+		}
+	}
+
+	return fmt.Sprintf(`usage: shmux [-config <path>] [-shell <path>] <script> -- [arguments ...]
+
+Available scripts: %s
+Run 'shmux -h' for details.
+`, strings.Join(availableScripts, ", "))
+}
+
+// Replaces positional arguments in the arguments slice ($1..$9) and
+// $@ with script name in 'content
 func replaceArguments(content string, arguments []string, scriptName string) string {
 	result := content
 
