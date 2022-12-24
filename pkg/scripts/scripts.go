@@ -29,10 +29,6 @@ func RunScript(script Script, shell string, arguments []string) (string, error) 
 	defer file.Close()
 
 	file.WriteString(strings.Join(script, "\n"))
-	err = os.Chdir(path)
-	if err != nil {
-		return "", err
-	}
 
 	out, err := exec.Command(shell, path).Output()
 	if err != nil {
@@ -88,10 +84,9 @@ func getTempScriptPath() string {
 // Tries identifying lines including scripts, returning if it's a match and what that is
 func readScript(line string) (isScriptLine bool, match string) {
 	r, _ := regexp.Compile(SCRIPT_IDENTIFIER_REGEXP)
-
 	submatch := r.FindStringSubmatch(line)
 
-	if len(match) > 1 {
+	if len(submatch) > 1 {
 		return true, submatch[1]
 	}
 
