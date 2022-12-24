@@ -24,7 +24,7 @@ Available flags:
 
 `
 
-func Parse() (shell string, config string, scriptName string, arguments []string) {
+func Parse() (shell string, config string, scriptName string, arguments []string, err error) {
 	flag.Usage = func() {
 		fmt.Print(HELP_TEXT)
 		flag.PrintDefaults()
@@ -38,6 +38,11 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 	shell = oneOf(*shellFlag, os.Getenv(SHELL_ENVIRONMENT), DEFAULT_SHELL)
 	config = oneOf(*configFlag, os.Getenv(CONFIGURATION_ENVIRONMENT), DEFAULT_CONFIGURATION)
 	scriptName = oneOf(flag.Arg(0), HELP_SCRIPT)
+
+	err = validateShell(shell)
+	if err == nil {
+		err = validateConfig(config)
+	}
 
 	doubleDashIndex := findIndex(flag.Args(), ARGUMENT_SEPARATOR)
 
@@ -70,4 +75,30 @@ func oneOf(items ...string) string {
 	}
 
 	return ""
+}
+
+func validateShell(shell string) error {
+	info, err := os.Stat(shell)
+	if err != nil {
+		return err
+	}
+
+	if !canOwnerExec(info.Mode()) {
+		return fmt.Errorf("cannot execute \"%s\"", shell)
+	}
+
+	return nil
+}
+
+func validateConfig(config string) error {
+	_, err := os.Stat(config)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func canOwnerExec(mode os.FileMode) bool {
+	return mode&0100 != 0
 }

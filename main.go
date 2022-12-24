@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	shell, config, scriptName, args := arguments.Parse()
+	shell, config, scriptName, args, err := arguments.Parse()
+	exceptions.HandleException(err)
 
 	file, err := os.Open(config)
 	exceptions.HandleException(err)
