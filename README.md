@@ -18,7 +18,8 @@ _Unix_
 OS=$(uname | tr '[:upper:]' '[:lower:]')
 ARCH=$([[ $(uname -m) == "x86_64" ]] && echo "amd64" || echo "386")
 
-wget -O /usr/local/bin/shmux https://github.com/shikaan/shmux/releases/download/latest/shmux-${OS}-${ARCH}
+wget -O /usr/local/bin/shmux https://github.com/shikaan/shmux/releases/latest/download/shmux-${OS}-${ARCH}
+chmod u+x /usr/local/bin/shmux
 ```
 
 _Windows and manual instructions_
