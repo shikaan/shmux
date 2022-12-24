@@ -30,7 +30,8 @@ func RunScript(script Script, scriptName string, shell string, arguments []strin
 	}
 	defer file.Close()
 
-	file.WriteString(strings.Join(script, "\n"))
+	fileContent := strings.Join(script, "\n")
+	file.WriteString(replaceArguments(fileContent, arguments, scriptName))
 
 	out, err := exec.Command(shell, path).Output()
 	if err != nil {
@@ -92,6 +93,17 @@ func ReadScript(scriptName string, file io.Reader) (Script, error) {
 	return lines, nil
 }
 
+func replaceArguments(content string, arguments []string, scriptName string) string {
+	result := content
+
+	for i, arg := range cap(arguments, 9) {
+		placeholder := fmt.Sprintf("$%d", i+1)
+		result = strings.ReplaceAll(result, placeholder, arg)
+	}
+
+	return strings.ReplaceAll(result, "$@", scriptName)
+}
+
 // Returns the path of the temporary script we use for execution
 func getTempScriptPath() string {
 	return filepath.Join(os.TempDir(), TEMP_SCRIPT_FILE)
@@ -109,4 +121,13 @@ func readScript(line string) (isScriptLine bool, match string) {
 	}
 
 	return false, ""
+}
+
+// Caps a slice to a certain length
+func cap(slice []string, n int) []string {
+	if len(slice) < n {
+		return slice
+	}
+
+	return slice[:n]
 }
