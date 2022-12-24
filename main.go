@@ -13,14 +13,14 @@ func main() {
 	shell, config, scriptName, arguments := arguments.Parse()
 
 	file, err := os.Open(config)
-	exceptions.HandleError(err)
+	exceptions.HandleException(err)
 	defer file.Close()
 
 	script, err := scripts.ReadScript(scriptName, file)
-	exceptions.HandleError(err)
+	exceptions.HandleException(err)
 
 	output, err := scripts.RunScript(script, shell, arguments)
-	exceptions.HandleError(err)
+	exceptions.HandleException(err)
 
 	fmt.Print(output)
 }
