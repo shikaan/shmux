@@ -10,7 +10,6 @@ const DEFAULT_CONFIGURATION = "shmux.sh"
 const CONFIGURATION_ENVIRONMENT = "SHMUX_CONFIG"
 const DEFAULT_SHELL = "/bin/sh"
 const SHELL_ENVIRONMENT = "SHMUX_SHELL"
-
 const ARGUMENT_SEPARATOR = "--"
 
 func Parse() (shell string, config string, scriptName string, arguments []string) {
@@ -34,6 +33,7 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 	return
 }
 
+// Returns the index of the given element in the slice or -1 if missing
 func index(slice []string, element string) int {
 	for k, v := range slice {
 		if element == v {
@@ -44,6 +44,7 @@ func index(slice []string, element string) int {
 	return -1
 }
 
+// Returns the first non-zero value item in the list
 func oneOf(items ...string) string {
 	for _, i := range items {
 		if i != "" {
