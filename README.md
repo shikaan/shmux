@@ -44,11 +44,15 @@ greet:
 Which can then be utilized from within the same folder as
 
 ```bash
-# Runs the build command
+# Runs the test command
+$ shmux test
+
+# Runs the build command with "linux" as $1
 $ shmux build -- "linux"
 
-# Runs the greet command
-$ shmux greet -- "darkness" # => Hello Darkness, my old friend
+# Runs the greet command with "darkness" as $1
+$ shmux greet -- "darkness" 
+# => Hello darkness, my old friend
 ```
 
 ### More Usage
@@ -58,9 +62,10 @@ What if we wanted to write the scripts in JavaScript? Well, you then just need a
 ```js
 greet:
   const friend = "$1"
+  const author = "$@"
   const message = friend === "darkness" 
     ? "Hello darkness, my old friend"
-    : `Hello ${friend}`
+    : `Hello ${friend}, from ${author}`
   
   console.log(message)
 ```
@@ -69,7 +74,8 @@ and run it like
 
 ```bash
 # As flags
-$ shmux -c="shmux.js" -s=$(which node) greet -- "darkness"
+$ shmux -config="shmux.js" -shell=$(which node) greet -- "Manuel"
+# => Hello Manuel, from greet
 
 # or from environment
 export SHMUX_CONFIG="shmux.js"

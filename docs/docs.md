@@ -1,4 +1,4 @@
-# Documentation
+# shmux: Documentation
 
 <details>
 <summary>Table of contents</summary>
@@ -7,7 +7,6 @@
 * [Runtime](#runtime)
 
 </details>
-<br>
 
 ## Configuration
 
