@@ -44,13 +44,7 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 		err = validateConfig(config)
 	}
 
-	doubleDashIndex := findIndex(flag.Args(), ARGUMENT_SEPARATOR)
-
-	if doubleDashIndex == -1 {
-		arguments = []string{}
-	} else {
-		arguments = flag.Args()[:doubleDashIndex]
-	}
+	arguments = getAdditionalArguments(flag.Args())
 
 	return
 }
@@ -101,4 +95,15 @@ func validateConfig(config string) error {
 
 func canOwnerExec(mode os.FileMode) bool {
 	return mode&0100 != 0
+}
+
+// Returns arguments provided after ARGUMENT_SEPARATOR
+func getAdditionalArguments(args []string) []string {
+	doubleDashIndex := findIndex(args, ARGUMENT_SEPARATOR)
+
+	if doubleDashIndex == -1 {
+		return []string{}
+	}
+
+	return args[(doubleDashIndex + 1):]
 }
