@@ -38,3 +38,11 @@ In the runtime, scripts have the following variables available
 |---          |--- |
 | `$1`..`$9`  | Respectively the first 9 arguments passed after the `--` separator
 | `$@`        | Holds the name of the current running script
+
+## Environment, flags, and defaults
+
+The general rule is that as little configuration as possible should be provided for `shmux` to run. It is in fact possible to provide no configuration and have `shmux` operating on sensible defaults most of the times. However, `shmux` also provides means to customise its behaviour, namely CLI flags and environment variables. 
+
+Hierarachy for those configuration points goes as follows: CLI flags take precedence over everything, environment variables can be overridden by CLI flags, and lack of both flags and environment variables will make `shmux` operate on defaults.
+
+In short: `CLI flags > Environment Variables > defaults` where the `>` symbol refers to the precedence given to these options.
