@@ -4,9 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
-const DEFAULT_CONFIGURATION = "shmux.sh"
+const CONFIGURATION_GLOB = "shmuxfile.*"
 const CONFIGURATION_ENVIRONMENT = "SHMUX_CONFIG"
 const DEFAULT_SHELL = "/bin/sh"
 const SHELL_ENVIRONMENT = "SHMUX_SHELL"
@@ -16,7 +17,7 @@ const HELP_TEXT = `usage: shmux [-config <path>] [-shell <path>] <script> -- [ar
 
 shmux is a utility to run multiple scripts from one file. Scripts can be written in (almost) any language and they don't need to be in the same language.
 
-The scripts are defined in a configuration file called shmuxfile. Similarly to a Makefile for GNU Make, this file serves as a manifest for the scripts to be run.
+The scripts are defined in a configuration file called 'shmuxfile'. Similarly to a Makefile for GNU Make, this file serves as a manifest for the scripts to be run.
 
 More information is available at https://github.com/shikaan/shmux.
 
@@ -30,20 +31,23 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 		flag.PrintDefaults()
 	}
 
-	configFlag := flag.String("config", "", fmt.Sprintf("Configuration file path. It falls back to the SHMUX_SHELL environment variable. (default %s)", DEFAULT_CONFIGURATION))
-	shellFlag := flag.String("shell", "", fmt.Sprintf("Shell to be used to run the scripts. It falls back to the SHMUX_SHELL environment variable. (default %s)", DEFAULT_SHELL))
+	configFlag := flag.String("config", "", "Configuration file path. It falls back to the closest 'shmuxfile.*' available.")
+	shellFlag := flag.String("shell", "", fmt.Sprintf("Shell to be used to run the scripts. (default %s)", DEFAULT_SHELL))
 
 	flag.Parse()
 
 	shell = oneOf(*shellFlag, os.Getenv(SHELL_ENVIRONMENT), DEFAULT_SHELL)
-	config = oneOf(*configFlag, os.Getenv(CONFIGURATION_ENVIRONMENT), DEFAULT_CONFIGURATION)
-	scriptName = oneOf(flag.Arg(0), HELP_SCRIPT)
 
+	config, err = getConfigurationLocation(oneOf(*configFlag, os.Getenv(CONFIGURATION_ENVIRONMENT)))
+	if err != nil {
+		return
+	}
 	err = validateShell(shell)
-	if err == nil {
-		err = validateConfig(config)
+	if err != nil {
+		return
 	}
 
+	scriptName = oneOf(flag.Arg(0), HELP_SCRIPT)
 	arguments = getAdditionalArguments(flag.Args())
 
 	return
@@ -78,16 +82,7 @@ func validateShell(shell string) error {
 	}
 
 	if !canOwnerExec(info.Mode()) {
-		return fmt.Errorf("cannot execute \"%s\"", shell)
-	}
-
-	return nil
-}
-
-func validateConfig(config string) error {
-	_, err := os.Stat(config)
-	if err != nil {
-		return err
+		return fmt.Errorf("cannot execute \"%s\": do you have permission to execute it?", shell)
 	}
 
 	return nil
@@ -95,6 +90,41 @@ func validateConfig(config string) error {
 
 func canOwnerExec(mode os.FileMode) bool {
 	return mode&0100 != 0
+}
+
+// Looks up and returns the absolute path to the configuration file to be found
+// in the current working directory or the parent folders
+func getConfigurationLocation(configFileName string) (string, error) {
+	// Utilise provided configuration if any, else do globmatching
+	searchTerm := oneOf(configFileName, CONFIGURATION_GLOB)
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	// Ensure folders are all in the same shape before the comparison
+	currentDirectory, err := filepath.Abs(workingDirectory)
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		// Error can only be bad patters, hence ignored
+		matches, _ := filepath.Glob(filepath.Join(currentDirectory, searchTerm))
+
+		if len(matches) > 0 {
+			return matches[0], nil
+		}
+
+		newDirectory := filepath.Dir(currentDirectory)
+		isRoot := currentDirectory == newDirectory
+
+		if isRoot {
+			return "", fmt.Errorf("cannot find \"%s\": does it exists here (%s) or in any parent folders?", searchTerm, workingDirectory)
+		}
+
+		currentDirectory = newDirectory
+	}
 }
 
 // Returns arguments provided after ARGUMENT_SEPARATOR
