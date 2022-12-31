@@ -37,23 +37,67 @@ func Test_readScript(t *testing.T) {
 func TestReadScript(t *testing.T) {
 	type args struct {
 		scriptName string
+		shell      string
 		file       io.Reader
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    Script
+		want    *Script
 		wantErr bool
 	}{
-		{"one script, one line", args{"script", strings.NewReader("script:\n\techo $HOME")}, []string{"echo $HOME"}, false},
-		{"one script, many lines", args{"script", strings.NewReader("script:\n\tif true:\n\t\tprint('test2')")}, []string{"if true:", "\tprint('test2')"}, false},
-		{"one script, many lines with spaces", args{"script", strings.NewReader("script:\n   if true:\n     print('test2')")}, []string{"if true:", "  print('test2')"}, false},
-		{"two scripts, retuns latter", args{"another", strings.NewReader("script:\n\tscript1\n\nanother:\n\tscript2")}, []string{"script2"}, false},
-		{"two scripts, finds nothing", args{"unknown", strings.NewReader("script:\n\tscript1\n\nanother:\n\tscript2")}, nil, true},
+		{
+			"one script, with non-default interpreter",
+			args{"script", "/bin/interpreter", strings.NewReader("script:\n\techo $HOME")},
+			&Script{Name: "script", Lines: []string{"echo $HOME"}, Interpreter: "/bin/interpreter"},
+			false,
+		},
+		{
+			"one script, one line",
+			args{"script", "/bin/bash", strings.NewReader("script:\n\techo $HOME")},
+			&Script{Name: "script", Lines: []string{"echo $HOME"}, Interpreter: "/bin/bash"},
+			false,
+		},
+		{
+			"one script, many lines",
+			args{"script", "/bin/bash", strings.NewReader("script:\n\tif true:\n\t\tprint('test2')")},
+			&Script{Name: "script", Lines: []string{"if true:", "\tprint('test2')"}, Interpreter: "/bin/bash"},
+			false,
+		},
+		{
+			"one script, many lines with spaces",
+			args{"script", "/bin/bash", strings.NewReader("script:\n   if true:\n     print('test2')")},
+			&Script{Name: "script", Lines: []string{"if true:", "  print('test2')"}, Interpreter: "/bin/bash"},
+			false,
+		},
+		{
+			"two scripts, retuns latter",
+			args{"another", "/bin/bash", strings.NewReader("script:\n\tscript1\n\nanother:\n\tscript2")},
+			&Script{Name: "another", Lines: []string{"script2"}, Interpreter: "/bin/bash"},
+			false,
+		},
+		{
+			"two scripts, finds nothing",
+			args{"unknown", "/bin/bash", strings.NewReader("script:\n\tscript1\n\nanother:\n\tscript2")},
+			nil,
+			true,
+		},
+		{
+			"one script, with simple shebang",
+			args{"script", "/bin/bash", strings.NewReader("script:\n\t#!/bin/lol\n\tline")},
+			&Script{Name: "script", Lines: []string{"line"}, Interpreter: "/bin/lol"},
+			false,
+		},
+		{
+			"one script, with shebang with options",
+			args{"script", "/bin/bash", strings.NewReader("script:\n\t#!/bin/lol --lol=1 --two\n\tline")},
+			&Script{Name: "script", Lines: []string{"line"}, Interpreter: "/bin/lol", Options: []string{"--lol=1", "--two"}},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadScript(tt.args.scriptName, tt.args.file)
+			got, err := ReadScript(tt.args.scriptName, tt.args.shell, tt.args.file)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadScript() error = %v, wantErr %v", err, tt.wantErr)
 				return

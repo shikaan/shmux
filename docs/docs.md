@@ -1,12 +1,10 @@
-# shmux: Documentation
+# shmux
 
-<details>
-<summary>Table of contents</summary>
+### Table of contents
 
 * [Configuration](#configuration)
 * [Runtime](#runtime)
-
-</details>
+* [Environment, flags, and defaults](#environment-flags-and-defaults)
 
 ## Configuration
 
@@ -20,21 +18,34 @@ A script is composed of all the lines in between two script definitions or last 
 
 In a nutshell, `shmux` is not opinionated about which languages the script are written in and - so long as the syntax allows[^1] - editor support comes out of the box. Calling the shmuxfile with the most common extension of your language of choice, will make it significantly easier.
 
-For example, a shmuxfile with bash scripts can be called `shmux.bash`. If it was with JavaScript scripts, it can be called `shmux.js`. This will yield pretty decent syntax highlighting.
+For example, a shmuxfile with bash scripts can be called `shmuxfile.bash`. If it was with JavaScript scripts, it can be called `shmuxfile.js`. This will yield pretty decent syntax highlighting.
 
 If you need more sophisticated tooling, please [open an Issue](https://github.com/shikaan/shmux/issues).
 
-[^1]: Namely, permits intendations and presence of `script:`.
+[^1]: Namely, permits intendations and presence of the `script:` labels.
 
 ## Runtime
 
 All the scripts are executed in isolation. Under the hood, `shmux` parses the file, creates a temporary file with it's content and runs it with the specified shell.
 
-This means that all the line in the same script share scope, as if they were on a single file.
+This means that all the lines in the same script share scope, as if they were on a single file.
 
 In the runtime, scripts have the following variables available
 
-| Variable    | Description   |
-|---          |--- |
-| `$1`..`$9`  | Respectively the first 9 arguments passed after the `--` separator
-| `$@`        | Holds the name of the current running script
+| Variable    | Description                                                         |
+|---          |---                                                                  |
+| `$1`..`$9`  | Respectively the first 9 arguments passed after the `--` separator  |
+| `$@`        | Holds the name of the current running script                        |
+
+## Environment, flags, and defaults
+
+The general rule is that as little configuration as possible should be provided for `shmux` to run. It is in fact possible to provide no configuration and have `shmux` operating on sensible defaults most of the times. However, `shmux` also provides means to customise its behaviour, namely CLI flags and environment variables. 
+
+Hierarachy for those configuration points goes as follows: inline configuration (when applicable) takes precedence over everything, CLI flags override environment variables, and lack of any of them will make `shmux` operate on defaults.
+
+In short: `inline configuration > CLI flags > environment variables > defaults` where the `>` means "takes precedence over".
+
+| CLI Flag          | Environment Variable  | Default               | Description                                                 |
+|---                |---                    | ---                   | ---                                                         |
+| `-configuration`  | `SHMUX_CONFIG`        | closest `shmuxfile.*` | Location of the _shmuxfile_.                                |
+| `-shell`          | `SHMUX_SHELL`         | current `$SHELL`      | Interpreter to run the script. Overriden by inline shebang. |

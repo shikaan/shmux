@@ -28,9 +28,9 @@ Head to the [releases](https://github.com/shikaan/shmux/releases) page and downl
 
 ### Usage
 
-A common use case for `shmux` is running simple scripts for your app in a standardised and language agnostic way. These scripts are to be found in the _configuraiton_ file, also known as _shmuxfile_.
+A common use case for `shmux` is running simple scripts in a standardized and language-agnostic way. These scripts are to be found in the _configuration_ file, also known as _shmuxfile_.
 
-For exmaple, a `shmux.sh` for a Go project might look like: 
+For example, a `shmuxfile.sh` for a Go project might look like: 
 
 ```sh
 build:
@@ -41,7 +41,7 @@ greet:
   echo "Hello $1, my old friend"
 ```
 
-Which can then be utilized from within the same folder as
+Which can then be utilized as
 
 ```bash
 # Runs the test command
@@ -57,10 +57,12 @@ $ shmux greet -- "darkness"
 
 ### More Usage
 
-What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmux.js` which reads something like
+What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmuxfile.js` with a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) defining the interpreter to be used and you're set.
 
 ```js
 greet:
+  #!/usr/bin/env node
+
   const friend = "$1"
   const author = "$@"
   const message = friend === "darkness" 
@@ -73,15 +75,8 @@ greet:
 and run it like
 
 ```bash
-# As flags
-$ shmux -config="shmux.js" -shell=$(which node) greet -- "Manuel"
+$ shmux greet -- "Manuel"
 # => Hello Manuel, from greet
-
-# or from environment
-export SHMUX_CONFIG="shmux.js"
-export SHMUX_SHELL=$(which node)
-
-shmux greet -- "Manuel"
 ```
 
 ## 📄 Documentation
@@ -98,7 +93,7 @@ More detailed documentation can be found [here](./docs/docs.md).
 
   As long as the language you choose is fine with having strings like `script:` in its syntax, you can just piggy-back on the existing editor support. 
   
-  For example, if your _shmuxfile_ hosts JavaScript code, calling it `shmux.js` will give you decent syntax highlighting out of the box in most editors.
+  For example, if your _shmuxfile_ hosts JavaScript code, calling it `shmuxfile.js` will give you decent syntax highlighting out of the box in most editors.
 
   More sophisticated editor support may be coming soon. If you are interested, feel free to open an issue.
 
