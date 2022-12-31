@@ -9,7 +9,6 @@ import (
 
 const ARGUMENT_SEPARATOR = "--"
 const CONFIGURATION_GLOB = "shmuxfile.*"
-const DEFAULT_SHELL = "/bin/sh"
 const ENVIRONMENT_CONFIGURATION = "SHMUX_CONFIG"
 const ENVIRONMENT_SHELL = "SHMUX_SHELL"
 const HELP_SCRIPT = "$$$$___HELP___$$$$"
@@ -32,16 +31,17 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 	}
 
 	configFlag := flag.String("config", "", "Configuration file path. It falls back to the closest 'shmuxfile.*' available.")
-	shellFlag := flag.String("shell", "", fmt.Sprintf("Shell to be used to run the scripts. (default %s)", DEFAULT_SHELL))
+	shellFlag := flag.String("shell", "", "Interpreter used to run the scripts. It defaults to the current $SHELL.")
 
 	flag.Parse()
 
-	shell = oneOf(*shellFlag, os.Getenv(ENVIRONMENT_SHELL), DEFAULT_SHELL)
+	shell = oneOf(*shellFlag, os.Getenv(ENVIRONMENT_SHELL), os.Getenv("SHELL"))
 
 	config, err = getConfigurationLocation(oneOf(*configFlag, os.Getenv(ENVIRONMENT_CONFIGURATION)))
 	if err != nil {
 		return
 	}
+
 	err = validateShell(shell)
 	if err != nil {
 		return
@@ -82,7 +82,7 @@ func validateShell(shell string) error {
 	}
 
 	if !canOwnerExec(info.Mode()) {
-		return fmt.Errorf("cannot execute \"%s\": do you have permission to execute it?", shell)
+		return fmt.Errorf("cannot execute \"%s\"", shell)
 	}
 
 	return nil
@@ -120,7 +120,7 @@ func getConfigurationLocation(configFileName string) (string, error) {
 		isRoot := currentDirectory == newDirectory
 
 		if isRoot {
-			return "", fmt.Errorf("cannot find \"%s\": does it exists here (%s) or in any parent folders?", searchTerm, workingDirectory)
+			return "", fmt.Errorf("cannot find \"%s\" here (%s) or in any parent folder", searchTerm, workingDirectory)
 		}
 
 		currentDirectory = newDirectory
