@@ -33,6 +33,9 @@ A common use case for `shmux` is running simple scripts in a standardized and la
 For example, a `shmuxfile.sh` for a Go project might look like: 
 
 ```sh
+test:
+  go test ./...
+
 build:
   go generate
   GOOS=$1 go build
