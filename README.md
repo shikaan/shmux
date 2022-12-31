@@ -57,10 +57,12 @@ $ shmux greet -- "darkness"
 
 ### More Usage
 
-What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmuxfile.js` which reads something like
+What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmuxfile.js` with a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) defining the interpreter to be used and you're set.
 
 ```js
 greet:
+  #!/usr/bin/env node
+
   const friend = "$1"
   const author = "$@"
   const message = friend === "darkness" 
@@ -73,14 +75,8 @@ greet:
 and run it like
 
 ```bash
-# As flags
-$ shmux -shell=$(which node) greet -- "Manuel"
+$ shmux greet -- "Manuel"
 # => Hello Manuel, from greet
-
-# or from environment
-export SHMUX_SHELL=$(which node)
-
-shmux greet -- "Manuel"
 ```
 
 ## 📄 Documentation
