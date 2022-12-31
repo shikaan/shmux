@@ -1,13 +1,10 @@
-# shmux: Documentation
+# shmux
 
-<details>
-<summary>Table of contents</summary>
+### Table of contents
 
 * [Configuration](#configuration)
 * [Runtime](#runtime)
 * [Environment, flags, and defaults](#environment-flags-and-defaults)
-
-</details>
 
 ## Configuration
 
