@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 )
 
-const CONFIGURATION_GLOB = "shmuxfile.*"
-const CONFIGURATION_ENVIRONMENT = "SHMUX_CONFIG"
-const DEFAULT_SHELL = "/bin/sh"
-const SHELL_ENVIRONMENT = "SHMUX_SHELL"
 const ARGUMENT_SEPARATOR = "--"
+const CONFIGURATION_GLOB = "shmuxfile.*"
+const DEFAULT_SHELL = "/bin/sh"
+const ENVIRONMENT_CONFIGURATION = "SHMUX_CONFIG"
+const ENVIRONMENT_SHELL = "SHMUX_SHELL"
 const HELP_SCRIPT = "$$$$___HELP___$$$$"
 const HELP_TEXT = `usage: shmux [-config <path>] [-shell <path>] <script> -- [arguments ...]
 
@@ -36,9 +36,9 @@ func Parse() (shell string, config string, scriptName string, arguments []string
 
 	flag.Parse()
 
-	shell = oneOf(*shellFlag, os.Getenv(SHELL_ENVIRONMENT), DEFAULT_SHELL)
+	shell = oneOf(*shellFlag, os.Getenv(ENVIRONMENT_SHELL), DEFAULT_SHELL)
 
-	config, err = getConfigurationLocation(oneOf(*configFlag, os.Getenv(CONFIGURATION_ENVIRONMENT)))
+	config, err = getConfigurationLocation(oneOf(*configFlag, os.Getenv(ENVIRONMENT_CONFIGURATION)))
 	if err != nil {
 		return
 	}
