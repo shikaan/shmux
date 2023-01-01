@@ -19,7 +19,7 @@ Shell script multiplexer.
 
 ### Installation
 
-_Unix_
+_MacOS and Linux_
 ```sh
 OS=$(uname | tr '[:upper:]' '[:lower:]')
 ARCH=$([[ $(uname -m) == "x86_64" ]] && echo "amd64" || echo "386")
