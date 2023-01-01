@@ -9,6 +9,12 @@ Shell script multiplexer.
 <b>Write</b> and <b>run</b> multiple scripts from the same file. In (almost) any language.
 </p>
 
+<p align="center">
+  <a href="https://asciinema.org/a/548928" target="_blank">
+    <img src="https://asciinema.org/a/548928.svg" height="288"/>
+  </a>
+</p>
+
 ## ⚡️ Quick start
 
 ### Installation
