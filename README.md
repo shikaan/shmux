@@ -21,11 +21,7 @@ Shell script multiplexer.
 
 _MacOS and Linux_
 ```sh
-OS=$(uname | tr '[:upper:]' '[:lower:]')
-ARCH=$([[ $(uname -m) == "x86_64" ]] && echo "amd64" || echo "386")
-
-wget -O /usr/local/bin/shmux https://github.com/shikaan/shmux/releases/latest/download/shmux-${OS}-${ARCH}
-chmod u+x /usr/local/bin/shmux
+sudo sh -c "curl -s https://shikaan.github.io/sup/install | REPO=shikaan/shmux sh -"
 ```
 
 _Windows and manual instructions_
