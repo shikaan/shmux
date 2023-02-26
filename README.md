@@ -5,8 +5,7 @@
 <h1 align="center">shmux</h1>
 
 <p align="center">
-Shell script multiplexer.
-<b>Write</b> and <b>run</b> multiple scripts from the same file. In (almost) any language.
+Run multiple scripts from one file. In (almost) any language.
 </p>
 
 <p align="center">
@@ -22,6 +21,10 @@ Shell script multiplexer.
 _MacOS and Linux_
 ```sh
 sudo sh -c "curl -s https://shikaan.github.io/sup/install | REPO=shikaan/shmux sh -"
+
+# or
+
+sudo sh -c "wget -q https://shikaan.github.io/sup/install -O- | REPO=shikaan/shmux sh -"
 ```
 
 _Windows and manual instructions_
