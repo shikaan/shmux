@@ -25,8 +25,6 @@ func main() {
 	script, err := scripts.ReadScript(scriptName, shell, file)
 	exceptions.HandleException(err)
 
-	output, err := scripts.RunScript(script, args)
-	exceptions.HandleException(err)
-
-	fmt.Print(output)
+	err = scripts.RunScript(script, args)
+	exceptions.HandleScriptError(scriptName, err)
 }

@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/shikaan/shmux/pkg/exceptions"
+	"time"
 )
 
-const TEMP_SCRIPT_FILE = "shmux"
+var TEMP_SCRIPT_FILE = ""
+func init() {
+	TEMP_SCRIPT_FILE = fmt.Sprintf("shmux_%d", time.Now().UnixNano())
+}
 
 // A script is a slice of lines representing each a LOC
 type Script struct {
@@ -23,28 +25,25 @@ type Script struct {
 	Options     []string
 }
 
-// Executes a script in a given shell
+// Creates an exec.Cmd that executes a script in a given shell
 // Arguments are positional arguments ($1, $2...) which can be used in the script as replacement
-func RunScript(script *Script, arguments []string) (string, error) {
-	path := getTempScriptPath()
-	os.RemoveAll(path)
+func RunScript(script *Script, arguments []string) (err error) {
+	path := GetTempScriptPath()
 
 	file, err := os.Create(path)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer file.Close()
+	defer os.RemoveAll(path)
 
 	fileContent := strings.Join(script.Lines, "\n")
 	file.WriteString(replaceArguments(fileContent, arguments, script.Name))
 
-	out, err := exec.Command(script.Interpreter, append(script.Options, path)...).Output()
-	if err != nil {
-		exceptions.HandleScriptError(script.Name, err, string(out))
-		return "", err
-	}
-
-	return string(out), nil
+	cmd := exec.Command(script.Interpreter, append(script.Options, path)...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	return cmd.Run()
 }
 
 // Parses the provided file, retuning the Script whose name is the provided one
@@ -147,7 +146,7 @@ func replaceArguments(content string, arguments []string, scriptName string) str
 }
 
 // Returns the path of the temporary script we use for execution
-func getTempScriptPath() string {
+func GetTempScriptPath() string {
 	return filepath.Join(os.TempDir(), TEMP_SCRIPT_FILE)
 }
 

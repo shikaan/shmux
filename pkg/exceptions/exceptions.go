@@ -3,6 +3,7 @@ package exceptions
 import (
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 func HandleException(e error) {
@@ -12,10 +13,14 @@ func HandleException(e error) {
 	}
 }
 
-func HandleScriptError(scriptName string, e error, output string) {
+func HandleScriptError(scriptName string, e error) {
 	if e != nil {
-		os.Stderr.WriteString(fmt.Sprintf("shmux: script \"%s\" returned non-zero status code.\n", scriptName))
-		os.Stderr.WriteString(fmt.Sprintf("Error: %s\n", e.Error()))
-		os.Exit(1)
+		status := 1
+		if exitError, ok := e.(*exec.ExitError); ok {
+			status = exitError.ExitCode()
+		}
+
+		os.Stderr.WriteString(fmt.Sprintf("shmux: script \"%s\" exited with code %d\n", scriptName, status))
+		os.Exit(status)
 	}
 }
