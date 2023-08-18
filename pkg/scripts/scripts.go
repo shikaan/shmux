@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/shikaan/shmux/pkg/exceptions"
+	"time"
 )
 
-const TEMP_SCRIPT_FILE = "shmux"
+var TEMP_SCRIPT_FILE = ""
+func init() {
+	TEMP_SCRIPT_FILE = fmt.Sprintf("shmux_%d", time.Now().UnixNano())
+}
 
 // A script is a slice of lines representing each a LOC
 type Script struct {
