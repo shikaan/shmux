@@ -1,21 +1,14 @@
 package scripts
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
-	"time"
 )
 
-var TEMP_SCRIPT_FILE = ""
-func init() {
-	TEMP_SCRIPT_FILE = fmt.Sprintf("shmux_%d", time.Now().UnixNano())
-}
+// To prevent infinite recursion, we limit the nesting level of script dependencies
+const MAXIMUM_NESTING_LEVEL = 2
 
 // A script is a slice of lines representing each a LOC
 type Script struct {
@@ -23,41 +16,21 @@ type Script struct {
 	Lines       []string
 	Interpreter string
 	Options     []string
-}
-
-// Creates an exec.Cmd that executes a script in a given shell
-// Arguments are positional arguments ($1, $2...) which can be used in the script as replacement
-func RunScript(script *Script, arguments []string) (err error) {
-	path := GetTempScriptPath()
-
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	defer os.RemoveAll(path)
-
-	fileContent := strings.Join(script.Lines, "\n")
-	file.WriteString(replaceArguments(fileContent, arguments, script.Name))
-
-	cmd := exec.Command(script.Interpreter, append(script.Options, path)...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-	return cmd.Run()
+	Dependencies []Script
 }
 
 // Parses the provided file, retuning the Script whose name is the provided one
-func ReadScript(scriptName string, shell string, file io.Reader) (*Script, error) {
-	script := &Script{Name: scriptName, Interpreter: shell}
-	availableScripts := []string{}
-	scanner := bufio.NewScanner(file)
+func ReadScript(scriptName string, shell string, fileContent []byte, currentNestingLevel uint) (script *Script, err error) {
+	script = &Script{Name: scriptName, Interpreter: shell, Dependencies: []Script{}}
+	lines := strings.Split(string(fileContent), "\n")
 
+	availableScripts := []string{}
 	shouldCollect := false
 	firstLine := true
 	tabLength := 0
-	for scanner.Scan() {
-		line := scanner.Text()
-		isScriptLine, match := readScript(line)
+
+	for _, line := range lines {
+		isScriptLine, match, dependencies := readScript(line)
 
 		if isScriptLine {
 			availableScripts = append(availableScripts, match)
@@ -66,6 +39,12 @@ func ReadScript(scriptName string, shell string, file io.Reader) (*Script, error
 			// This allows collecting lines from next line on.
 			if !shouldCollect && match == scriptName {
 				shouldCollect = true
+
+				script.Dependencies, err = getDependencyScripts(dependencies, match, currentNestingLevel, shell, fileContent)
+				if err != nil { 
+					return nil, err
+				}
+
 				continue
 			}
 
@@ -109,56 +88,47 @@ func ReadScript(scriptName string, shell string, file io.Reader) (*Script, error
 		return nil, fmt.Errorf("could not find \"%s\". Available scripts: %s", scriptName, strings.Join(availableScripts, ", "))
 	}
 
-	return script, nil
+	return
 }
 
-func MakeHelp(file io.Reader) string {
-	availableScripts := []string{}
-	scanner := bufio.NewScanner(file)
+func getDependencyScripts(dependencies []string, match string, currentNestingLevel uint, shell string, fileContent []byte) (deps []Script, err error) {
+	for _, dependency := range dependencies {
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		isScriptLine, match := readScript(line)
-
-		if isScriptLine {
-			availableScripts = append(availableScripts, match)
+		if dependency == match {
+			return nil, fmt.Errorf("script \"%s\" has a circular dependency on itself", match)
 		}
+
+		if currentNestingLevel >= MAXIMUM_NESTING_LEVEL {
+			return nil, fmt.Errorf("script \"%s\" has a dependency on \"%s\" which exceeds the maximum nesting level of %d", match, dependency, MAXIMUM_NESTING_LEVEL)
+		}
+
+		var dependencyScript *Script; 
+		dependencyScript, err = ReadScript(dependency, shell, fileContent, currentNestingLevel+1)
+		if err != nil { return }
+
+		deps = append(deps, *dependencyScript)
 	}
 
-	return fmt.Sprintf(`usage: shmux [-config <path>] [-shell <path>] <script> -- [arguments ...]
-
-Available scripts: %s
-Run 'shmux -h' for details.
-`, strings.Join(availableScripts, ", "))
+	return
 }
 
-// Replaces positional arguments in the arguments slice ($1..$9) and
-// $@ with script name in 'content
-func replaceArguments(content string, arguments []string, scriptName string) string {
-	result := content
-
-	for i, arg := range cap(arguments, 9) {
-		placeholder := fmt.Sprintf("$%d", i+1)
-		result = strings.ReplaceAll(result, placeholder, arg)
-	}
-
-	return strings.ReplaceAll(result, "$@", scriptName)
-}
-
-// Returns the path of the temporary script we use for execution
-func GetTempScriptPath() string {
-	return filepath.Join(os.TempDir(), TEMP_SCRIPT_FILE)
-}
-
-const SCRIPT_IDENTIFIER_REGEXP = "^(\\S+):(.*)"
+const SCRIPT_IDENTIFIER_REGEXP = `^(\S+):\s*(.*)$`
 
 // Tries identifying lines including scripts, returning if it's a match and what that is
-func readScript(line string) (isScriptLine bool, match string) {
+func readScript(line string) (isScriptLine bool, script string, dependencies []string) {
 	r, _ := regexp.Compile(SCRIPT_IDENTIFIER_REGEXP)
 	submatch := r.FindStringSubmatch(line)
-	scriptName := get(submatch, 1)
+	
+	if submatch == nil { return }
 
-	return scriptName != "", scriptName
+	script = submatch[1]
+	isScriptLine = script != "" 
+	
+	if isScriptLine {
+		dependencies = slices.Compact(strings.Fields(submatch[2]))
+	}
+
+	return
 }
 
 const SHEBANG_REGEXP = "#!\\s?(\\S+)\\s?(.*)"
