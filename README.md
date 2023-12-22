@@ -33,7 +33,9 @@ Head to the [releases](https://github.com/shikaan/shmux/releases) page and downl
 
 ### Usage
 
-`shmux` makes you execute different scripts (or _recipes_), in any scripting language, from one one _configuration_ file (also known as _shmuxfile_).
+`shmux` makes you execute different scripts in any scripting language from one one configuration file.
+
+The scripts are called _recipes_ and the configuration file is called _shmuxfile_.
 
 #### Writing a recipe
 
@@ -85,7 +87,7 @@ $ shmux greet -- "darkness"
 # => Hello darkness, my old friend
 ```
 
-#### Recipe depwndencies
+#### Recipe dependencies
 
 Similar to a `Makefile`, recipes can have dependencies:
 
