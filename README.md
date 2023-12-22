@@ -33,8 +33,9 @@ Head to the [releases](https://github.com/shikaan/shmux/releases) page and downl
 
 ### Usage
 
-A common use case for `shmux` is running simple scripts in a standardized and *language-agnostic* way (see [Other Languages](#other-languages)). 
-These scripts are to be found in the _configuration_ file, also known as _shmuxfile_.
+`shmux` makes you execute different scripts (or _recipes_), in any scripting language, from one one _configuration_ file (also known as _shmuxfile_).
+
+#### Writing a recipe
 
 For example, a `shmuxfile.sh` for a Go project might look like: 
 
@@ -53,11 +54,9 @@ echo:
   echo "$@"  
 ```
 
-Last two recipes in JavaScript that could looke like:
+The last two recipes could be also written in JavaScript like:
 
 ```js
-// shmuxfile.js
-
 greet:
   #!/usr/bin/env node
 
@@ -70,7 +69,9 @@ echo:
   console.log(`$@`)
 ```
 
-Which can then be utilized as
+#### Running a recipe
+
+Running the recipes then is as simple as:
 
 ```bash
 # Runs the test command
@@ -84,7 +85,9 @@ $ shmux greet -- "darkness"
 # => Hello darkness, my old friend
 ```
 
-Recipes can have dependencies:
+#### Recipe depwndencies
+
+Similar to a `Makefile`, recipes can have dependencies:
 
 ```sh
 test:
@@ -105,9 +108,9 @@ More detailed documentation can be found [here](./docs/docs.md).
 
 ## ❓ FAQs
 
-* _Isn't this similar to a Makefile?_
+* _Isn't this just another GNU Make?_
 
-  `shmux` draws inspiration from `make` but stands out as a script runner, not a build system. This distinction eliminates common build system constraintsl ike the presumption that outputs are files. Moreover, it offers:
+  `shmux` draws inspiration from `make` but stands out as a script runner, not a build system. This distinction eliminates common build system constraints like the presumption that outputs are files. Moreover, it offers:
 
   * Command line arguments support.
   * Compatibility with various scripting languages.
