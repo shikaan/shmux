@@ -11,6 +11,7 @@
 The scripts run by `shmux` live in files called _shmuxfiles_. These configuration files follow the following pattern:
 
 * lines starting with a non-white space and ending with a `:` will be interpreted as a _script definition_
+    * if the colon is followed by space-separated words, they are treated as _script dependencies_ (i.e., scripts running before the invoked one)
 * non-empty lines prepended with whitespaces are considered _script lines_ 
 * the other lines are ignored
 
@@ -19,6 +20,13 @@ A script is composed of all the lines in between two script definitions or last 
 In a nutshell, `shmux` is not opinionated about which languages the script are written in and - so long as the syntax allows[^1] - editor support comes out of the box. Calling the shmuxfile with the most common extension of your language of choice, will make it significantly easier.
 
 For example, a shmuxfile with bash scripts can be called `shmuxfile.bash`. If it was with JavaScript scripts, it can be called `shmuxfile.js`. This will yield pretty decent syntax highlighting.
+
+At this point, `shmux` is known to be working with:
+* sh and derviatives (bash, dash, fish, zsh...)
+* JavaScript / TypeScript (with ts-node)
+* Perl
+* Python
+* Ruby
 
 If you need more sophisticated tooling, please [open an Issue](https://github.com/shikaan/shmux/issues).
 

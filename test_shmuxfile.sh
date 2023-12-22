@@ -9,3 +9,19 @@ deps_error: greet error
 
 error:
   exit 1
+
+javascript:
+  #!/usr/bin/env node
+  console.log("hello")
+
+python:
+  #!/usr/bin/env python3
+  print("hello")
+
+perl:
+  #!/usr/bin/env perl
+  print "hello\n";
+
+ruby:
+  #!/usr/bin/env ruby
+  puts "hello"
