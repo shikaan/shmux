@@ -1,9 +1,6 @@
 test:
   go test github.com/shikaan/shmux/pkg/...
 
-build:
+build: test
   go build -o shmux-dev .
-  mv shmux-dev /usr/local/bin/shmux-dev
-
-greet:
-  echo "Hello $1, my old friend"
+  mv shmux-dev ~/.local/bin/shmux-dev

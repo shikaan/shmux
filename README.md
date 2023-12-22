@@ -33,7 +33,8 @@ Head to the [releases](https://github.com/shikaan/shmux/releases) page and downl
 
 ### Usage
 
-A common use case for `shmux` is running simple scripts in a standardized and language-agnostic way. These scripts are to be found in the _configuration_ file, also known as _shmuxfile_.
+A common use case for `shmux` is running simple scripts in a standardized and *language-agnostic* way (see [Other Languages](#other-languages)). 
+These scripts are to be found in the _configuration_ file, also known as _shmuxfile_.
 
 For example, a `shmuxfile.sh` for a Go project might look like: 
 
@@ -47,6 +48,26 @@ build:
 
 greet:
   echo "Hello $1, my old friend"
+
+echo:
+  echo "$@"  
+```
+
+Last two recipes in JavaScript that could looke like:
+
+```js
+// shmuxfile.js
+
+greet:
+  #!/usr/bin/env node
+
+  const friend = "$1"
+  console.log(`Hello ${friend}, my old friend`)
+
+echo:
+  #!/usr/bin/env node
+
+  console.log(`$@`)
 ```
 
 Which can then be utilized as
@@ -63,29 +84,20 @@ $ shmux greet -- "darkness"
 # => Hello darkness, my old friend
 ```
 
-### More Usage
+Recipes can have dependencies:
 
-What if we wanted to write the scripts in JavaScript? Well, you then just need a `shmuxfile.js` with a [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) defining the interpreter to be used and you're set.
+```sh
+test:
+  go test ./...
 
-```js
-greet:
-  #!/usr/bin/env node
-
-  const friend = "$1"
-  const author = "$@"
-  const message = friend === "darkness" 
-    ? "Hello darkness, my old friend"
-    : `Hello ${friend}, from ${author}`
-  
-  console.log(message)
+build: test
+  go build
 ```
-
-and run it like
 
 ```bash
-$ shmux greet -- "Manuel"
-# => Hello Manuel, from greet
+$ shmux build
 ```
+Running `shmux build` will execute `test` before `build`.
 
 ## 📄 Documentation
 
@@ -93,9 +105,27 @@ More detailed documentation can be found [here](./docs/docs.md).
 
 ## ❓ FAQs
 
+* _Isn't this similar to a Makefile?_
+
+  `shmux` draws inspiration from `make` but stands out as a script runner, not a build system. This distinction eliminates common build system constraintsl ike the presumption that outputs are files. Moreover, it offers:
+
+  * Command line arguments support.
+  * Compatibility with various scripting languages.
+  * Pre-runtime issue detection.
+  * Execution capability from any subdirectory.
+  * Native support on MacOS and Windows, no extra dependencies required.
+
 * _Which languages are supported?_
   
-  `shmux` makes no assumptions about the underlying scripting language to utilize, because it always requires you to specify the shell. Any language whose syntax is compatible with shmuxfiles' requirements is supported.
+  `shmux` makes no assumptions about the underlying scripting language to utilize, because it always requires you to specify the shell (either via flag or shebang).
+
+  To this day, `shmux` is known to be working with:
+
+  * sh and derviatives (bash, dash, fish, zsh...)
+  * JavaScript / TypeScript (with ts-node)
+  * Perl
+  * Python
+  * Ruby
 
 * _Does it have editor support?_
 
