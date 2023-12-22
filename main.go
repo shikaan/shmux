@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/shikaan/shmux/pkg/arguments"
@@ -9,12 +10,14 @@ import (
 	"github.com/shikaan/shmux/pkg/scripts"
 )
 
+const MAX_FILE_SIZE = 1<<20; // 1MB
+
 func main() {
 	shell, config, scriptName, args, err := arguments.Parse()
-	exceptions.HandleException(err)
+	exceptions.HandleException(err, 1)
 
 	file, err := os.Open(config)
-	exceptions.HandleException(err)
+	exceptions.HandleException(err, 1)
 	defer file.Close()
 
 	if scriptName == arguments.HELP_SCRIPT {
@@ -22,9 +25,13 @@ func main() {
 		return
 	}
 
-	script, err := scripts.ReadScript(scriptName, shell, file)
-	exceptions.HandleException(err)
+	limitedReader := io.LimitReader(file, MAX_FILE_SIZE)
+	content, err := io.ReadAll(limitedReader)
+	exceptions.HandleException(err, 1)
 
-	err = scripts.RunScript(script, args)
-	exceptions.HandleScriptError(scriptName, err)
+	script, err := scripts.ReadScript(scriptName, shell, content, 0)
+	exceptions.HandleException(err, 1)
+
+	status, err := scripts.RunScript(script, args)
+	exceptions.HandleException(err, status)
 }
