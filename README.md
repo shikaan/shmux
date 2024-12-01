@@ -21,9 +21,9 @@ Run multiple scripts from one file. In (almost) any language.
 _MacOS and Linux_
 ```sh
 sudo sh -c "curl -s https://shikaan.github.io/sup/install | REPO=shikaan/shmux sh -"
-
-# or
-
+```
+or
+```
 sudo sh -c "wget -q https://shikaan.github.io/sup/install -O- | REPO=shikaan/shmux sh -"
 ```
 
